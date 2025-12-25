@@ -53,29 +53,27 @@ fn assignment_1(peripherals: Peripherals) {
     let ch2: &CH = peripherals.PWM.ch(2);
 
     let mot1 = utils::motors::Motor::new(ch1);
-    let mot2 = utils::motors::Motor::new(ch2);
+    let mut mot2 = utils::motors::Motor::new(ch2);
+
+    mot2.direction(utils::motors::Direction::REVERSE);
 
     mot1.set_dc(60);
     mot2.set_dc(60);
 
-    delay();
-    delay();
-    delay();
-    delay();
     delay();
 
     mot1.set_dc(100);
     mot2.set_dc(100);
     
     delay();
-    delay();
-    delay();
-    delay();
-    delay();
     
-    for i in 0..100 {
-        mot1.set_dc(100 - i);
-        mot2.set_dc(100 - i);
+    for i in 0..4 {
+        mot1.set_dc(100 - 25 *i);
+        mot2.set_dc(100 - 25*i);
+        delay();
     }
+
+    mot1.set_dc(0);
+    mot2.set_dc(0);
 
 }
