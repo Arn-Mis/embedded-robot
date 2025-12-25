@@ -35,13 +35,15 @@ fn main() -> ! {
     peripherals.RESETS.reset().modify(|_, w| w.io_bank0().clear_bit().pwm().clear_bit());
     while peripherals.RESETS.reset_done().read().io_bank0().bit_is_clear() {}
     while peripherals.RESETS.reset_done().read().pwm().bit_is_clear() {}
-
+    
+    // Motor gpio initialization to PWM function
     peripherals.IO_BANK0.gpio(18).gpio_ctrl().modify(|_, w| w.funcsel().variant(FUNCSEL_A::PWM));
     peripherals.IO_BANK0.gpio(19).gpio_ctrl().modify(|_, w| w.funcsel().variant(FUNCSEL_A::PWM));
     peripherals.IO_BANK0.gpio(20).gpio_ctrl().modify(|_, w| w.funcsel().variant(FUNCSEL_A::PWM));
     peripherals.IO_BANK0.gpio(21).gpio_ctrl().modify(|_, w| w.funcsel().variant(FUNCSEL_A::PWM));
     
-    assignment_1(peripherals);
+    // assignment_1(peripherals);
+    assignment2(peripherals);
 
     loop {
         delay();
@@ -76,4 +78,9 @@ fn assignment_1(peripherals: Peripherals) {
     mot1.set_dc(0);
     mot2.set_dc(0);
 
+}
+
+fn assignment2(peripherals: Peripherals) {
+    peripherals.IO_BANK0.gpio(6).gpio_ctrl().modify(|_, w| w.funcsel().variant(FUNCSEL_A::SIO));
+    peripherals.IO_BANK0.gpio(7).gpio_ctrl().modify(|_, w| w.funcsel().variant(FUNCSEL_A::SIO));
 }
