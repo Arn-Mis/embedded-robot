@@ -34,11 +34,17 @@ fn delay() {
 fn main() -> ! {
     let peripherals = Peripherals::take().unwrap();
 
-    // Clears the reset bits of io_bank and pwm, releasing them from the reset state, and waits for
-    // resets to finish.
-    peripherals.RESETS.reset().modify(|_, w| w.io_bank0().clear_bit().pwm().clear_bit());
+    peripherals.RESETS.reset().modify(|_, w| {
+        w.io_bank0().clear_bit()
+            .pads_bank0().clear_bit()
+            .timer().clear_bit()
+            .pwm().clear_bit()
+    });
     while peripherals.RESETS.reset_done().read().io_bank0().bit_is_clear() {}
+    while peripherals.RESETS.reset_done().read().pads_bank0().bit_is_clear() {}
+    while peripherals.RESETS.reset_done().read().timer().bit_is_clear() {}
     while peripherals.RESETS.reset_done().read().pwm().bit_is_clear() {}
+
     
     // Motor gpio initialization to PWM function
     peripherals.IO_BANK0.gpio(18).gpio_ctrl().modify(|_, w| w.funcsel().variant(FUNCSEL_A::PWM));
@@ -46,6 +52,9 @@ fn main() -> ! {
     peripherals.IO_BANK0.gpio(20).gpio_ctrl().modify(|_, w| w.funcsel().variant(FUNCSEL_A::PWM));
     peripherals.IO_BANK0.gpio(21).gpio_ctrl().modify(|_, w| w.funcsel().variant(FUNCSEL_A::PWM));
 
+    peripherals.IO_BANK0.gpio(25).gpio_ctrl().write(| w| w.funcsel().variant(FUNCSEL_A::SIO));
+    peripherals.SIO.gpio_oe().modify(|_, w| w.gpio_oe().variant(1 << 25));
+    
     NVIC::unpend(IO_IRQ_BANK0);
     unsafe { NVIC::unmask(IO_IRQ_BANK0) };
     
@@ -87,21 +96,18 @@ fn assignment_1(peripherals: Peripherals) {
 
 }
 
-fn assignment2(peripherals: Peripherals) {
-    peripherals.IO_BANK0.gpio(6).gpio_ctrl().modify(|_, w| w.funcsel().variant(FUNCSEL_A::SIO));
-    peripherals.IO_BANK0.gpio(7).gpio_ctrl().modify(|_, w| w.funcsel().variant(FUNCSEL_A::SIO));
-fn assignment_2(p: Peripherals) {
-    let ch1: &CH = p.PWM.ch(1);
-    let ch2: &CH = p.PWM.ch(2);
-
-    let mot1 = utils::motors::Motor::new(ch1);
-    let mut mot2 = utils::motors::Motor::new(ch2);
+fn assignment2(p: Peripherals) {
+    p.IO_BANK0.gpio(6).gpio_ctrl().modify(|_, w| w.funcsel().variant(FUNCSEL_A::SIO));
+    p.IO_BANK0.gpio(7).gpio_ctrl().modify(|_, w| w.funcsel().variant(FUNCSEL_A::SIO));
     
     let trig_pin = 7;
     let echo_pin = 6;
 
-    p.SIO.gpio_oe().modify(|_, w| w.gpio_oe().variant(1 << trig_pin));
+    p.SIO.gpio_oe().modify(|_, w| w.gpio_oe().variant(1 << trig_pin | 1 << 25));
     p.SIO.gpio_out_clr().write(|w| w.gpio_out_clr().variant(1 << echo_pin | 1 << trig_pin)); 
+
+    p.IO_BANK0.intr(0).write(|w| w.gpio6_edge_high().variant(true).gpio6_edge_low().variant(true));
+    p.IO_BANK0.proc0_inte(0).modify(|_, w| { w.gpio6_edge_high().set_bit().gpio6_edge_low().set_bit() });
 
     loop {
         
@@ -114,7 +120,6 @@ fn assignment_2(p: Peripherals) {
         while p.TIMER.timelr().read().bits().wrapping_sub(begin) < 10 {}
         p.SIO.gpio_out_clr().write(|w| w.gpio_out_clr().variant(1 << trig_pin));
         
-        p.IO_BANK0.intr(0).write(|w| w.gpio6_edge_high().variant(true).gpio6_edge_low().variant(true));
     }
 }
 
@@ -126,8 +131,6 @@ fn IO_IRQ_BANK0() {
         let sio = unsafe {&*SIO::ptr()};
         let intr = io_bank0.intr(0).read();
 
-        io_bank0.gpio(25).gpio_ctrl().write(| w| w.funcsel().variant(FUNCSEL_A::SIO));
-        sio.gpio_oe().modify(|_, w| w.gpio_oe().variant(1 << 25));
         
         if intr.gpio6_edge_high().bit_is_set() {
             unsafe {ECHO_BEGIN = timer.timelr().read().bits();} 
@@ -141,5 +144,4 @@ fn IO_IRQ_BANK0() {
             io_bank0.intr(0).write(|w| w.gpio6_edge_low().variant(true));
         }
     });
-    }
 }
