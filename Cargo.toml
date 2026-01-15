@@ -5,8 +5,8 @@ edition = "2024"
 
 [dependencies]
 cortex-m = { version = "0.7.7", features = ["critical-section-single-core"] }
-cortex-m-rt = "0.7.5"
-rp2040-pac = { version = "0.6.0", features = ["critical-section"] }
+cortex-m-rt = { version = "0.7.5", features = ["device"]}
+rp2040-pac = { version = "0.6.0", features = ["critical-section", "rt"] }
 rp2040-boot2 = "0.3.0"
 
 [profile.release]
