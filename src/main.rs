@@ -51,7 +51,6 @@ fn main() -> ! {
     
     // assignment_1(peripherals);
     assignment2(peripherals);
-    assignment_2(peripherals);
 
     loop {
         delay();
@@ -142,4 +141,5 @@ fn IO_IRQ_BANK0() {
             io_bank0.intr(0).write(|w| w.gpio6_edge_low().variant(true));
         }
     });
+    }
 }
