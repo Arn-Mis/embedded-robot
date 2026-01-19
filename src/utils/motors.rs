@@ -1,4 +1,4 @@
-use rp2040_pac::{generic::FieldWriter, pwm::{self, CH, ch::cc::CC_SPEC}};
+use rp2040_pac::pwm::CH;
 
 
 // Create a direction trait and implement it for the W (A_W) struct 
@@ -13,7 +13,7 @@ pub trait MotorControl<'a> {
 }
 
 pub enum Direction {
-    FORTH,
+    FORWARD,
     REVERSE
 }
 
@@ -24,7 +24,7 @@ impl<'a> MotorControl<'a> for Motor<'a> {
 
     fn set_dc(&self, percent: usize) {
         match self.direction {
-        Direction::FORTH => self.channel
+        Direction::FORWARD => self.channel
                                 .cc()
                                 .modify(|_, w| unsafe { w.a().bits(percent as u16) }),
         Direction::REVERSE => self.channel
@@ -53,6 +53,6 @@ impl<'a> Motor<'a> {
                 .b_inv().set_bit()
                 .en().set_bit());
         
-        Motor {channel, direction: Direction::FORTH }
+        Motor {channel, direction: Direction::FORWARD }
     }
 }
