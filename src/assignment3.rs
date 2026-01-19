@@ -1,4 +1,4 @@
-use rp2040_pac::{ADC, Peripherals, io_bank0::gpio::gpio_ctrl::FUNCSEL_A, pwm::CH};
+use rp2040_pac::{ADC, Peripherals, pwm::CH};
 
 use crate::utils::{self, motors::{Motor, MotorControl}};
 
@@ -16,14 +16,6 @@ pub fn assignment_launch(p: &Peripherals) {
     while p.RESETS.reset_done().read().pads_bank0().bit_is_clear() {}
     while p.RESETS.reset_done().read().adc().bit_is_clear() {}
     
-    
-    p.ADC.cs().modify(|_, w| w.rrobin().variant(0b0011));
-    p.ADC.cs().modify(|_, w| w.en().set_bit());
-    while !p.ADC.cs().read().ready().bit_is_set() {}
-
-    p.IO_BANK0.gpio(25).gpio_ctrl().write(|w| w.funcsel().variant(FUNCSEL_A::SIO));
-    p.SIO.gpio_oe_set().write(|w| w.gpio_oe_set().variant(1 << 25));
-    p.SIO.gpio_out_clr().write(|w| w.gpio_out_clr().variant(1 << 25));
     
     let ch1: &CH = p.PWM.ch(1);
     let ch2: &CH = p.PWM.ch(2);
@@ -68,11 +60,11 @@ fn state_machine_loop(adc: &ADC, motor_right: &Motor, motor_left: &Motor) {
                 current_state = STATE::STRAIGHT;
             },
             (false, true) => {
-                // Only the outer sensor is on the line -> Turn right
+                // Only the outer sensor is on the line -> Turn left
                 current_state = STATE::LEFT;
             },
             (false, false) => {
-                // None of the sensors are on the line -> Turn left
+                // None of the sensors are on the line -> Turn right
                 current_state = STATE::RIGHT;
             },
         }

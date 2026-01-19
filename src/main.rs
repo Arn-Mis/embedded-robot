@@ -19,7 +19,7 @@ use rp2040_pac::{IO_BANK0, TIMER, interrupt};
 use rp2040_pac::Interrupt::IO_IRQ_BANK0;
 use rp2040_pac::Peripherals;
 use rp2040_pac::io_bank0::gpio::gpio_ctrl::FUNCSEL_A;
-use crate::{utils::clocks};
+use crate::{utils::{clocks, OBSTACLE}};
 
 // use rp2040_boot2;
 #[unsafe(link_section = ".boot2")]
@@ -27,9 +27,8 @@ use crate::{utils::clocks};
 #[used]
 pub static BOOT_LOADER: [u8; 256] = rp2040_boot2::BOOT_LOADER_W25Q080;
 pub static mut ECHO_BEGIN: u32 = 0;
-pub static mut OBSTACLE: bool = false;
 
-static SELECTED_MISSION: MISSION = MISSION::VARIABLE_SPEED;
+static SELECTED_MISSION: MISSION = MISSION::LINE_FOLLOWER;
 
 
 enum MISSION {

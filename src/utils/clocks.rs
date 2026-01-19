@@ -62,17 +62,6 @@ pub fn init_clocks(
 
     clocks.clk_adc_ctrl().modify(|_, w| w.enable().set_bit());
     
-    clocks.clk_rtc_div().modify(|_, w| w.int().variant(1024));
-
-    clocks.clk_rtc_ctrl().modify(|_, w| w.enable().clear_bit());
-
-    clocks.clk_rtc_ctrl().modify(|_, w| {
-        w.auxsrc()
-            .variant(clocks::clk_rtc_ctrl::AUXSRC_A::CLKSRC_PLL_USB)
-    });
-
-    clocks.clk_rtc_ctrl().modify(|_, w| w.enable().set_bit());
-
     clocks.clk_peri_ctrl().modify(|_, w| w.enable().clear_bit());
 
     clocks.clk_peri_ctrl().modify(|_, w| {
