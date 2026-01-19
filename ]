@@ -1,3 +1,0 @@
-pub mod motors;
-pub mod clocks;
-pub mod infrared;
